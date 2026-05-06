@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """
-MetaUAS DDP 训练：CYWS coco-inpainted 管线（data_split.pkl 划分 train/val）。
+MetaUAS DDP training: CYWS coco-inpainted pipeline (data_split.pkl train/val split).
 
-变化分割设定，数据源为 coco-inpainted 目录结构。
-- object-level：按 exchange_p 在 COCO 实例粘贴 exchange 与 CYWS inpaint 成对间划分
-- CYWS inpaint：随机两视图，mask 异或得变化区后做统一几何增强
-- DataLoader 返回 (prompt, query, mask)，mask 与 query 对齐
+- object-level: split between COCO instance paste exchange and CYWS inpaint pairs by exchange_p
+- CYWS inpaint: random two-view, mask XOR for change region, unified geometric augmentation
+- DataLoader returns (prompt, query, mask), mask aligned to query
 
-启动：torchrun --nproc_per_node=4 train/train_change_pairs.py --coco-inpainted-root /path/to/coco-inpainted/train
+Usage: torchrun --nproc_per_node=4 train/train_change_pairs.py --coco-inpainted-root /path/to/coco-inpainted/train
 """
 
 from __future__ import annotations
@@ -16,7 +15,7 @@ import argparse
 import sys
 from pathlib import Path
 
-# 确保可 import 顶层包：dataset/ module/ utils/
+# Ensure top-level packages (dataset/ module/ utils/) are importable
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
@@ -46,20 +45,20 @@ from train_ddp_common import (
 
 def parse_args():
     p = argparse.ArgumentParser(
-        description="MetaUAS DDP：CYWS coco-inpainted 数据（参见 arXiv:2505.09265）"
+        description="MetaUAS DDP: CYWS coco-inpainted data (see arXiv:2505.09265)"
     )
     p.add_argument("--target-size", type=int, default=256)
     p.add_argument(
         "--batch-size",
         type=int,
         default=32,
-        help="每卡 batch（DDP）；B4+双图+cat 在 24GB 上 128 易 OOM，可再降到 16",
+        help="Per-GPU batch size (DDP); B4+dual-image+cat may OOM at 128 on 24GB, reduce to 16 if needed",
     )
     p.add_argument(
         "--epochs",
         type=int,
         default=30,
-        help="默认 30 与论文 (arXiv:2505.09265) 训练 epoch 数一致",
+        help="Defaults to 30, matching the paper (arXiv:2505.09265)",
     )
     p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument(
@@ -67,7 +66,7 @@ def parse_args():
         type=float,
         default=5e-4,
         dest="weight_decay",
-        help="AdamW weight decay；论文为 0.0005",
+        help="AdamW weight decay; paper uses 0.0005",
     )
     p.add_argument("--num-workers", type=int, default=8)
     p.add_argument(
@@ -75,7 +74,7 @@ def parse_args():
         type=str,
         choices=("exponential", "cosine", "constant"),
         default="cosine",
-        help="constant：全程固定学习率（每 epoch 调用 step 但 lr 不变）",
+        help="constant: fixed learning rate throughout training",
     )
     p.add_argument("--gamma", type=float, default=0.95)
     p.add_argument("--eta-min", type=float, default=1e-6)
@@ -87,72 +86,72 @@ def parse_args():
         "--val-each-epoch",
         action=argparse.BooleanOptionalAction,
         default=True,
-        help="每 epoch 后做验证（关闭: --no-val-each-epoch）。验证需各 rank 都参与 all_reduce。",
+        help="Run validation after each epoch (disable: --no-val-each-epoch); requires all_reduce across ranks",
     )
     p.add_argument(
         "--val-batch-size",
         type=int,
         default=32,
-        help="验证每卡 batch；可与训练 batch 分开以省显存",
+        help="Per-GPU validation batch size; can differ from training to save memory",
     )
 
     # ========= MVTec eval each epoch (rank0 only) =========
     p.add_argument(
         "--mvtec-eval-each-epoch",
         action="store_true",
-        help="每个 epoch 后在 MVTec 上评估（rank0），并按 mean_auc 保存最优 ckpt",
+        help="Evaluate on MVTec after each epoch (rank0 only), save best ckpt by mean_auc",
     )
     p.add_argument(
         "--mvtec-root",
         type=str,
         default=str(Path.home() / "datasets/mvtec_ad"),
-        help="MVTec AD 根目录（含 bottle/ cable/ ...）",
+        help="MVTec AD root directory (contains bottle/ cable/ ...)",
     )
     p.add_argument(
         "--mvtec-device",
         type=str,
         default="local",
-        help="MVTec 评估所用 device：'local' 表示每个 rank 用本地训练卡（推荐）；或显式如 cuda:0",
+        help="Device for MVTec eval: 'local' uses each rank's training GPU (recommended), or explicit e.g. cuda:0",
     )
     p.add_argument("--mvtec-batch-size", type=int, default=32)
     p.add_argument(
         "--mvtec-seed",
         type=int,
         default=1,
-        help="MVTec 评估 seed 基准值；若启用多卡平均，则各 rank 用 seed+global_rank",
+        help="Base seed for MVTec eval; with multi-GPU avg, each rank uses seed+global_rank",
     )
     p.add_argument(
         "--mvtec-oneprompt-json",
         type=str,
         default="",
-        help="若提供：使用 oneprompt_seed*.json 为每类固定 prompt（优先于 seed 抽样）",
+        help="If provided: use oneprompt_seed*.json for fixed per-class prompts (overrides random seed sampling)",
     )
     p.add_argument(
         "--mvtec-oneprompt-seeds",
         type=str,
         default="",
         help=(
-            "多卡评估时为各 rank 指定不同 oneprompt seed（逗号分隔，如 '1,2,3,5'）。"
-            "若设置且提供 --mvtec-oneprompt-json/--mvtec-oneprompt-dir，则 rank i 使用 seeds[i]。"
+            "Comma-separated oneprompt seeds per rank for multi-GPU eval (e.g. '1,2,3,5'). "
+            "When set with --mvtec-oneprompt-json/--mvtec-oneprompt-dir, rank i uses seeds[i]."
         ),
     )
     p.add_argument(
         "--mvtec-oneprompt-dir",
         type=str,
         default="",
-        help="oneprompt_seed*.json 所在目录（可选；为空则从 --mvtec-oneprompt-json 推断目录）",
+        help="Directory containing oneprompt_seed*.json (optional; inferred from --mvtec-oneprompt-json if empty)",
     )
     p.add_argument(
         "--mvtec-prompt-root",
         type=str,
         default="",
-        help="oneprompt json 中 filename 的根目录；空则默认等于 --mvtec-root",
+        help="Root directory for filenames in oneprompt json; defaults to --mvtec-root if empty",
     )
     p.add_argument(
         "--best-mvtec-path",
         type=str,
         default="best_model_mvtec_auc.pth",
-        help="按 MVTec mean_auc 保存的最优 ckpt（rank0 写入）",
+        help="Best ckpt saved by MVTec mean_auc (written by rank0)",
     )
 
     # ========= Augmentations (CYWS-style, controlled via CLI) =========
@@ -160,7 +159,7 @@ def parse_args():
     p.add_argument(
         "--aug-crop-independent",
         action="store_true",
-        help="若开启：两张图独立采样 crop，并用 CYWS 交集逻辑严格对齐 mask（更难）",
+        help="If set: independently crop two images and strictly align masks via CYWS intersection logic (harder)",
     )
     p.add_argument("--aug-crop-scale-min", type=float, default=0.92)
     p.add_argument("--aug-crop-scale-max", type=float, default=1.0)
@@ -182,43 +181,43 @@ def parse_args():
         "--coco-inpainted-root",
         type=str,
         default="/home/ldl/metauas/coco-inpainted/train",
-        help="数据集根目录（含 data_split.pkl、images_and_masks、inpainted）",
+        help="Dataset root directory (contains data_split.pkl, images_and_masks, inpainted)",
     )
     p.add_argument(
         "--coco-inpainted-local-region-p",
         type=float,
         default=0.5,
-        help="以该概率走 local-region(DRAEM/Perlin) 合成；其余为 object-level(CYWS inpaint / exchange)",
+        help="Probability of local-region (DRAEM/Perlin) synthesis; rest is object-level (CYWS inpaint / exchange)",
     )
     p.add_argument(
         "--coco-inpainted-dtd-root",
         type=str,
         default="/home/ldl/datasets/dtd/images",
-        help="local-region 分支纹理源（DTD）根目录",
+        help="Texture source root for local-region branch (DTD)",
     )
     p.add_argument(
         "--coco-inpainted-exchange-p",
         type=float,
         default=0.5,
-        help="object-level 内：以该概率走 COCO 实例粘贴 exchange；否则走 CYWS inpaint（需有效 COCO 图+meta）",
+        help="Within object-level: probability of COCO instance paste exchange; otherwise CYWS inpaint (needs valid COCO images+meta)",
     )
     p.add_argument(
         "--coco-inpainted-coco-images",
         type=str,
         default="/home/ldl/datasets/images/train2017",
-        help="exchange 源：MS-COCO train 图像目录（*.jpg 等）",
+        help="Exchange source: MS-COCO train image directory (*.jpg etc.)",
     )
     p.add_argument(
         "--coco-inpainted-coco-metadata",
         type=str,
         default="/home/ldl/datasets/images/meta_data",
-        help="exchange 源：与 pre_process_coco 一致的 *.npy 实例标注目录",
+        help="Exchange source: directory of *.npy instance annotations (same as pre_process_coco)",
     )
     p.add_argument(
         "--coco-inpainted-exchange-max-area",
         type=float,
         default=0.35,
-        help="exchange 粘贴区域面积上限（相对整图）",
+        help="Maximum area ratio for exchange paste region (relative to full image)",
     )
     return p.parse_args()
 
@@ -256,9 +255,9 @@ def main():
         "sa",
         "cat",
     ).to(device)
-    # UnetDecoder 在 skip=None 时会跳过 SCSE 的 attention1，部分参数可能本轮无 grad，需打开 unused 检测
+    # UnetDecoder with skip=None bypasses SCSE attention1; some params may have no grad, need find_unused_parameters
     model = DDP(model, device_ids=[local_rank], find_unused_parameters=True)
-    # MetaUAS 中 encoder 已冻结；仅优化 alignment / decoder / segmentation head（与论文一致）
+    # Encoder is frozen; only optimize alignment / decoder / segmentation head
     trainable = [p for p in model.parameters() if p.requires_grad]
     optimizer = AdamW(
         trainable,
@@ -276,7 +275,7 @@ def main():
 
     ci_root = args.coco_inpainted_root.strip()
     if not ci_root:
-        raise ValueError("需要非空的 --coco-inpainted-root")
+        raise ValueError("--coco-inpainted-root must not be empty")
 
     if float(args.coco_inpainted_exchange_p) > 0.0:
         ex_img = Path(str(args.coco_inpainted_coco_images).strip())
@@ -284,8 +283,8 @@ def main():
         if (not ex_img.is_dir()) or (not ex_meta.is_dir()) or (not _scan_coco_images_for_exchange(ex_img)):
             if global_rank == 0:
                 print(
-                    "[train_change_pairs] exchange 已关闭（COCO 图像目录或 meta_data 无效，"
-                    "或目录内无图像）。仅 local-region + CYWS inpaint。",
+                    "[train_change_pairs] exchange disabled (invalid COCO image dir or meta_data, "
+                    "or no images found). Only local-region + CYWS inpaint.",
                     flush=True,
                 )
             args.coco_inpainted_exchange_p = 0.0
@@ -337,7 +336,7 @@ def main():
             f"| coco_ex_images={args.coco_inpainted_coco_images!r}"
         )
         print(
-            f"[train_change_pairs] encoder 冻结 | AdamW 可训练参数 {n_tr:,} / 冻结 {n_fr:,} "
+            f"[train_change_pairs] encoder frozen | AdamW trainable {n_tr:,} / frozen {n_fr:,} "
             f"| lr={args.lr} weight_decay={args.weight_decay}"
         )
         print(
@@ -357,7 +356,7 @@ def main():
         epoch_loss_sum = 0.0
         num_batches = 0
 
-        # DataLoader：(prompt, query, mask)，mask 与 query 对齐（与各 Dataset 约定一致）。
+        # DataLoader returns (prompt, query, mask); mask is aligned to query.
         for prompt, query, mask in tqdm(
             dataloader,
             desc=f"Epoch {epoch + 1}/{args.epochs}",
@@ -394,13 +393,13 @@ def main():
 
         # ========== Optional: MVTec eval each epoch (multi-rank avg) ==========
         if args.mvtec_eval_each_epoch:
-            # 每个 rank 跑不同 seed，然后 all_reduce 求平均；只由 rank0 保存 best
+            # Each rank runs with a different seed, then all_reduce for average; only rank0 saves best
             if args.mvtec_device.strip().lower() == "local":
                 mv_device = device
             else:
                 mv_device = torch.device(args.mvtec_device)
 
-            # 若 mvtec_device 与训练 device 不同，每个 rank 都需要临时搬运权重（更慢）
+            # If mvtec_device differs from training device, copy weights per rank (slower)
             if mv_device != device:
                 mv_model = MetaUAS("efficientnet-b4", "unet", 5, 5, 3, "sa", "cat").to(mv_device)
                 mv_model.load_state_dict(model.module.state_dict(), strict=True)
@@ -414,17 +413,17 @@ def main():
 
             seed_this_rank = int(args.mvtec_seed) + int(global_rank)
 
-            # 做法A：每个 rank 绑定不同 oneprompt_seed*.json（用于多 prompt 平均）
+            # Assign different oneprompt_seed*.json per rank (for multi-prompt averaging)
             seeds_csv = args.mvtec_oneprompt_seeds.strip()
             if seeds_csv:
                 if one_json is None and not args.mvtec_oneprompt_dir.strip():
                     raise ValueError(
-                        "--mvtec-oneprompt-seeds 需要同时提供 --mvtec-oneprompt-json 或 --mvtec-oneprompt-dir"
+                        "--mvtec-oneprompt-seeds requires --mvtec-oneprompt-json or --mvtec-oneprompt-dir"
                     )
                 seeds_list = [int(x.strip()) for x in seeds_csv.split(",") if x.strip()]
                 if len(seeds_list) < world_size:
                     raise ValueError(
-                        f"--mvtec-oneprompt-seeds 至少需要 {world_size} 个 seed（当前: {len(seeds_list)}）"
+                        f"--mvtec-oneprompt-seeds needs at least {world_size} seeds (got: {len(seeds_list)})"
                     )
                 one_dir = args.mvtec_oneprompt_dir.strip()
                 if not one_dir:
@@ -442,7 +441,7 @@ def main():
                 prompt_image_root=proot,
             )
 
-            # 求多卡平均
+            # Average across all ranks
             t = torch.tensor([float(mean_auc_local)], device=device, dtype=torch.float32)
             dist.all_reduce(t, op=dist.ReduceOp.SUM)
             mean_auc_avg = (t[0] / float(world_size)).item()

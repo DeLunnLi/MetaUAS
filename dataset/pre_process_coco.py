@@ -117,7 +117,7 @@ def _export_cyws_pair(
 
 
 def _mask_to_bool(mask_u8: np.ndarray) -> np.ndarray:
-    """Unify to bool mask (H,W)."""
+    """Unify bool mask (H,W)."""
     if mask_u8.ndim == 3:
         mask_u8 = mask_u8[..., 0]
     return (mask_u8.astype(np.uint8) > 127)

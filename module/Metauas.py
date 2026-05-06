@@ -98,7 +98,7 @@ class MetaUAS(nn.Module):
         preparams = get_preprocessing_params(self.encoder_name, pretrained="imagenet")
         self.preprocess = transforms.Normalize(preparams["mean"], preparams["std"])
 
-        # 论文设置：冻结 ImageNet 预训练 encoder，仅训练 alignment / decoder / segmentation head
+        # Freeze ImageNet-pretrained encoder; only train alignment / decoder / segmentation head
         self.encoder.eval()
         for param in self.encoder.parameters():
             param.requires_grad = False
@@ -108,7 +108,7 @@ class MetaUAS(nn.Module):
             encoder_out_channels = list(encoder_channels[self.encoder_depth - self.decoder_depth :])
             if self.fusion_policy == "cat":
                 num_coam_layers = self.num_alignment_layers
-                # 与 FPN 分支一致：AlignmentModule(cat) 把 query 与 aligned 在 C 维拼成 2C
+                # Consistent with FPN branch: AlignmentModule(cat) concatenates query and aligned on C dim as 2C
                 for i in range(self.num_alignment_layers):
                     encoder_out_channels[-(i + 1)] *= 2
             elif self.fusion_policy in {"add", "absdiff"}:
