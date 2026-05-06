@@ -37,11 +37,11 @@ class CocoMetaDataPaths:
 
 
 DEFAULT_COCO_META_PATHS = CocoMetaDataPaths(
-    coco_path_to_images="/home/ldl/datasets/images/train2017",
-    coco_path_to_masks="/home/ldl/datasets/images/mask2",
-    coco_path_to_inpainted="/home/ldl/datasets/images/inpainted_images_mask2",
-    path_to_dtd="/home/ldl/datasets/dtd/images",
-    coco_path_to_metadata="/home/ldl/datasets/images/meta_data",
+    coco_path_to_images="/path/to/datasets/images/train2017",
+    coco_path_to_masks="/path/to/datasets/images/mask2",
+    coco_path_to_inpainted="/path/to/datasets/images/inpainted_images_mask2",
+    path_to_dtd="/path/to/dtd/images",
+    coco_path_to_metadata="/path/to/datasets/images/meta_data",
     coco_change_pairs_root=None,
 )
 

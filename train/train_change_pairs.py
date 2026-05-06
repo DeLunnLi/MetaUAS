@@ -180,7 +180,7 @@ def parse_args():
     p.add_argument(
         "--coco-inpainted-root",
         type=str,
-        default="/home/ldl/metauas/coco-inpainted/train",
+        default="/path/to/coco-inpainted/train",
         help="Dataset root directory (contains data_split.pkl, images_and_masks, inpainted)",
     )
     p.add_argument(
@@ -192,7 +192,7 @@ def parse_args():
     p.add_argument(
         "--coco-inpainted-dtd-root",
         type=str,
-        default="/home/ldl/datasets/dtd/images",
+        default="/path/to/dtd/images",
         help="Texture source root for local-region branch (DTD)",
     )
     p.add_argument(
@@ -204,13 +204,13 @@ def parse_args():
     p.add_argument(
         "--coco-inpainted-coco-images",
         type=str,
-        default="/home/ldl/datasets/images/train2017",
+        default="/path/to/datasets/images/train2017",
         help="Exchange source: MS-COCO train image directory (*.jpg etc.)",
     )
     p.add_argument(
         "--coco-inpainted-coco-metadata",
         type=str,
-        default="/home/ldl/datasets/images/meta_data",
+        default="/path/to/datasets/images/meta_data",
         help="Exchange source: directory of *.npy instance annotations (same as pre_process_coco)",
     )
     p.add_argument(

@@ -945,8 +945,8 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Suppress 'cannot sample unique mask within N tries' warnings",
     )
-    p.add_argument("--lama-repo-dir", type=Path, default=Path("/home/ldl/datasets/lama"))
-    p.add_argument("--lama-model-path", type=Path, default=Path("/home/ldl/datasets/lama/big-lama"))
+    p.add_argument("--lama-repo-dir", type=Path, default=Path("/path/to/lama"))
+    p.add_argument("--lama-model-path", type=Path, default=Path("/path/to/lama/big-lama"))
     p.add_argument("--lama-checkpoint", type=str, default="best.ckpt")
     p.add_argument(
         "--lama-python",
