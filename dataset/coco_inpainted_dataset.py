@@ -28,7 +28,7 @@ from torchvision import transforms
 from torchvision.transforms import InterpolationMode
 from torchvision.transforms.functional import pil_to_tensor, to_pil_image
 
-from .aug_unified import UnifiedPipeline, rand_augmenter
+from .aug import UnifiedPipeline, rand_augmenter
 from .perlin import rand_perlin_2d_np
 
 import utils.general

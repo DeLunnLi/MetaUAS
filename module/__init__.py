@@ -1,5 +1,7 @@
 """MetaUAS model: EfficientNet encoder + SMP UNet decoder + soft alignment. Lazy-imports to avoid pulling SMP at init."""
 
+from __future__ import annotations
+
 from utils.meta_utils import (
     apply_ad_scoremap,
     normalize,

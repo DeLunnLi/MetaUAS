@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from torch.utils.data import Dataset
-import random
 import os
+import random
 from typing import Optional
+
+import numpy as np
 import torchvision.transforms as T
 from PIL import Image
-import numpy as np
+from torch.utils.data import Dataset
 
 
 class MvtecDataset(Dataset):

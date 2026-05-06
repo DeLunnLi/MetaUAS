@@ -1,16 +1,12 @@
-import io
+from __future__ import annotations
+
 import os
 import shutil
 from pathlib import Path
 
 import numpy as np
-import torch
-import torch.nn.functional as F
-import torchvision.transforms as T
 import yaml
 from easydict import EasyDict
-from einops import rearrange
-from PIL import Image
 from pycocotools import mask as coco_mask_utils
 
 def get_easy_dict_from_yaml_file(path_to_yaml_file):

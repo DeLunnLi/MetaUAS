@@ -4,7 +4,6 @@ import imgaug.augmenters as iaa
 import kornia as K
 import numpy as np
 import torch
-import torch.nn.functional as F
 
 
 # DTD texture augmenters for local-region change

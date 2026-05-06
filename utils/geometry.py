@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 from copy import deepcopy
 
 import kornia as K
 import shapely.affinity
 import shapely.geometry
 import torch
+from shapely.geometry import MultiPolygon, Polygon
 from shapely.validation import make_valid
-from shapely.geometry import Polygon, MultiPolygon
 
 
 def make_valid_polygon(shapely_object):
