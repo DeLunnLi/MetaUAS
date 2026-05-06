@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from __future__ import annotations
 
 import inspect
@@ -98,21 +95,16 @@ class MetaUAS(nn.Module):
         preparams = get_preprocessing_params(self.encoder_name, pretrained="imagenet")
         self.preprocess = transforms.Normalize(preparams["mean"], preparams["std"])
 
-        # Freeze ImageNet-pretrained encoder; only train alignment / decoder / segmentation head
         self.encoder.eval()
         for param in self.encoder.parameters():
             param.requires_grad = False
 
-        num_coam_layers = self.num_alignment_layers
         if self.decoder_name == "unet":
             encoder_out_channels = list(encoder_channels[self.encoder_depth - self.decoder_depth :])
             if self.fusion_policy == "cat":
-                num_coam_layers = self.num_alignment_layers
-                # Consistent with FPN branch: AlignmentModule(cat) concatenates query and aligned on C dim as 2C
                 for i in range(self.num_alignment_layers):
                     encoder_out_channels[-(i + 1)] *= 2
-            elif self.fusion_policy in {"add", "absdiff"}:
-                num_coam_layers = 0
+            num_coam_layers = self.num_alignment_layers if self.fusion_policy == "cat" else 0
             self.decoder = _make_unet_decoder(
                 UnetDecoder,
                 encoder_channels=encoder_out_channels,
@@ -216,30 +208,4 @@ class MetaUAS(nn.Module):
         return output.sigmoid()
 
     def forward_batch(self, batch: dict) -> torch.Tensor:
-        """Match official Lightning forward(batch) interface."""
-        q = batch["query_image"]
-        p = batch["prompt_image"]
-        query_input = self.preprocess(q)
-        prompt_input = self.preprocess(p)
-        with torch.no_grad():
-            query_encoded_features = self.encoder(query_input)
-            prompt_encoded_features = self.encoder(prompt_input)
-        q_feats = list(query_encoded_features)
-        p_feats = list(prompt_encoded_features)
-        for i in range(len(self.alignment)):
-            q_feats[-(i + 1)] = self.alignment[i](q_feats[-(i + 1)], p_feats[-(i + 1)])
-        query_decoded_features = self.decoder(*q_feats[self.encoder_depth - self.decoder_depth :])
-        if self.decoder_name in {"fpn", "fpncat", "fpnadd"}:
-            output = F.interpolate(
-                self.mask_head(query_decoded_features), scale_factor=4, mode="bilinear", align_corners=False
-            )
-        elif self.decoder_name == "unet":
-            if self.decoder_depth == 4:
-                output = F.interpolate(
-                    self.mask_head(query_decoded_features), scale_factor=2, mode="bilinear", align_corners=False
-                )
-            else:
-                output = self.mask_head(query_decoded_features)
-        else:
-            output = self.mask_head(query_decoded_features)
-        return output.sigmoid()
+        return self.forward(batch["query_image"], batch["prompt_image"])
