@@ -1,8 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-CYWS coco-inpainted Dataset with MetaUAS paper-style synthesis.
-
+CYWS coco-inpainted dataset with MetaUAS paper-style synthesis.
 - local-region: DRAEM/Perlin + DTD texture synthesis
 - object-level: CYWS inpaint pairs or COCO instance paste exchange
 - Returns (prompt, query, mask) aligned for model(query, prompt)
@@ -53,7 +50,7 @@ def _load_split_indices(root: Path, split: str) -> Set[int]:
 
 
 def group_inpainted_stems_by_idx(stems: List[str]) -> Dict[int, List[str]]:
-    """Group all valid stems (``{idx}_mask{k}``) under the same COCO ``idx``, for inpaint-to-inpaint pairing."""
+    """Group all valid stems (``{idx}_mask{k}``) under the same COCO idx for inpaint-to-inpaint pairing."""
     by: Dict[int, List[str]] = {}
     for s in stems:
         m = _STEM_RE.match(s)
@@ -67,10 +64,7 @@ def group_inpainted_stems_by_idx(stems: List[str]) -> Dict[int, List[str]]:
 
 
 def build_inpainted_pair_stems(root: Path, index_set: Set[int]) -> List[str]:
-    """
-    Scan ``inpainted/*.png``, keep stems matching ``{idx}_mask{id}`` with ``idx in index_set``,
-    where ``images_and_masks/{idx}.png`` and ``images_and_masks/{stem}.png`` both exist.
-    """
+    """Scan inpainted/*.png, keep stems matching {idx}_mask{id} with idx in index_set where both images_and_masks/{idx}.png and images_and_masks/{stem}.png exist."""
     inp_dir = root / "inpainted"
     img_dir = root / "images_and_masks"
     if not inp_dir.is_dir():
@@ -118,10 +112,7 @@ def paste_random_coco_instances(
     metadata_root: Path,
     exchange_max_area_ratio: float,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
-    """
-    Equivalent to ``CocoMetaDataset.get_objects_added_image``: randomly sample instance masks
-    from another COCO image and paste onto ``base_image_chw``. Returns ``(base, zero mask)`` on failure.
-    """
+    """Equivalent to CocoMetaDataset.get_objects_added_image: paste random instance masks from another COCO image onto base_image_chw. Returns (base, zero mask) on failure."""
     hw = base_image_chw.shape[-2:]
     h, w = int(hw[0]), int(hw[1])
     max_pixels = float(h * w) * float(exchange_max_area_ratio)
@@ -175,17 +166,7 @@ def paste_random_coco_instances(
 
 
 class CocoInpaintedPairDataset(torch.utils.data.Dataset):
-    """
-    Returns ``(prompt, query, mask)``: **mask is always in query pixel coordinates** (aligned to ``MetaUAS.forward(query, prompt)`` output).
-
-    All branches use ``UnifiedPipeline``: **two views + single initial mask synced geometrically**,
-    ``apply_geometric_sync`` does "original resolution → two-view projection → intersection pullback → per-view warp".
-    local-region / exchange / CYWS inpaint differ only in **how the initial mask is constructed**
-    (Perlin, DTD, ``paste_random_coco_instances``, two-view XOR, etc.). The final step swaps ``(prompt, query)`` with 50% probability,
-    **selecting the mask aligned with query**, then resizes to ``target_size``.
-
-    CYWS inpaint: **original image + two distinct random inpainted views under the idx** (``_cyws_random_two_views``).
-    """
+    """Returns (prompt, query, mask) — mask is always in query pixel coordinates, aligned to MetaUAS.forward(query, prompt)."""
 
     def __init__(
         self,
@@ -213,7 +194,7 @@ class CocoInpaintedPairDataset(torch.utils.data.Dataset):
         if not self._dtd_paths:
             raise FileNotFoundError(
                 f"No DTD textures found under {self.dtd_root} (expected */*.jpg). "
-                "If you do not want the local-region branch, set local_region_p to 0."
+                "Set local_region_p=0 to disable the local-region branch."
             )
         self.aug = UnifiedPipeline(
             mode="registered",
@@ -249,12 +230,7 @@ class CocoInpaintedPairDataset(torch.utils.data.Dataset):
         return (t > 0).long()
 
     def _cyws_random_two_views(self, idx: int, stem: str) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Uniformly sample two distinct views from the original and all valid inpainted stems under this idx,
-    returning ``(img_a, img_b, mask_long)`` for ``forward_object_level``.
-
-    - One is original: ``mask_long`` uses the inpainted view's ``images_and_masks/{stem}.png``.
-    - Both inpainted: ``mask_long`` is the binary XOR of the two masks.
-    """
+        """Uniformly sample two distinct views (original + inpainted stems) returning (img_a, img_b, mask_long)."""
         stems_list = sorted(self._stems_by_idx.get(idx, []) or [])
         if not stems_list:
             stems_list = [stem]
@@ -306,7 +282,7 @@ class CocoInpaintedPairDataset(torch.utils.data.Dataset):
         return img_a, img_b, mask_long
 
     def _synthesize_local_region_change(self, image_tensor: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Local-Region Change (DRAEM-style): synthesize anomaly in fixed 256x256 center-crop space, then bilinear-resize back to original tensor resolution."""
+        """Local-Region Change (DRAEM-style): synthesize anomaly in 256x256 center-crop space, then resize back to original resolution."""
         _, h0, w0 = image_tensor.shape
         pil_full = to_pil_image(image_tensor.clamp(0.0, 1.0))
         pil_small = transforms.Resize((256, 256), interpolation=InterpolationMode.BILINEAR)(pil_full)
@@ -343,7 +319,7 @@ class CocoInpaintedPairDataset(torch.utils.data.Dataset):
             np.float32
         )
 
-        # Resize back to original loaded resolution (cv2: (width, height))
+        # Resize back to original resolution (cv2: width, height)
         if h0 != h or w0 != w:
             changed_full = cv2.resize(changed, (int(w0), int(h0)), interpolation=cv2.INTER_LINEAR)
             mk_full = cv2.resize(perlin_thr, (int(w0), int(h0)), interpolation=cv2.INTER_LINEAR)
@@ -363,14 +339,14 @@ class CocoInpaintedPairDataset(torch.utils.data.Dataset):
 
         orig_path = self.root / "images_and_masks" / f"{idx}.png"
         image = self._load_rgb(orig_path)
-        # Training: choose object-level / local-region change with 50% probability each
+        # Training: choose object-level / local-region with ~50% probability
         do_local = (self.local_region_p > 0.0) and (random.random() < self.local_region_p)
         if do_local:
             changed, lr_mask = self._synthesize_local_region_change(image)
             image, changed, mask_on_image, mask_on_changed, _ = self.aug.forward_local_region(
                 image, changed, lr_mask
             )
-            # ``out0``=prompt, ``out1``=query; mask aligned to query.
+            # out0=prompt, out1=query; mask aligned to query
             if random.random() < 0.5:
                 out0 = self._resize(image)
                 out1 = self._resize(changed)
@@ -419,8 +395,8 @@ class CocoInpaintedPairDataset(torch.utils.data.Dataset):
                     img1, img2, mask_long
                 )
 
-                # forward_object_level: image/image_mask aligned to img1, inpainted/other-mask aligned to img2.
-                # apply_geometric_sync already intersected both masks in original coords then warped; pick the one aligned to query (out1).
+                # image/image_mask aligned to img1, inpainted/other-mask aligned to img2
+                # apply_geometric_sync intersected masks in original coords then warped; pick the one aligned to query (out1)
                 swap = random.random() < 0.5
                 if swap:
                     out0 = self._resize(image)
