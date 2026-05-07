@@ -543,6 +543,8 @@ def _run_lama_batch(
         str(predict_script),
         f"model.path={lama_model_path}",
         f"model.checkpoint={lama_checkpoint}",
+        "refine=True",
+        "refiner.gpu_ids=0",
         f"indir={work_dir}",
         f"outdir={pred_out_dir}",
         "dataset.img_suffix=.png",
