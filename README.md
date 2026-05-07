@@ -32,6 +32,8 @@ bash scripts/run_generate_cyws_dataset.sh
 ```
 
 > Adjust paths in `scripts/run_generate_cyws_dataset.sh` before running.
+> 
+> Alternatively, you can directly download the pre-generated COCO inpainted dataset from [CYWS](https://thor.robots.ox.ac.uk/~vgg/data/cyws/coco-inpainted.tar).
 
 ### 2. 🔥 Training
 
