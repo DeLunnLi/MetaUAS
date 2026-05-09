@@ -42,6 +42,22 @@ pip install -r requirements.txt
 bash scripts/train_on_4gpu.sh
 ```
 
+### 3. 📈 Evaluation
+
+Two evaluation modes are supported:
+- **Oneprompt**: one random normal sample per class as prompt, multi-seed averaging
+- **TopK**: per-image top-k most similar normal samples as prompts
+
+```bash
+# Download pretrained checkpoint
+wget https://huggingface.co/ldl010302/MetaUAS/resolve/main/metauas-256.pth
+
+# Run both modes on MVTec AD and VisA
+bash scripts/run_eval_mvtec.sh
+```
+
+> Adjust `CKPT`, `MVTEC_ROOT`, `VISA_ROOT` in `scripts/run_eval_mvtec.sh` before running.
+
 ## 📊 Performance & Checkpoints
 
 > Experiments run on 4× NVIDIA RTX 3090, batch size 96/GPU, lr=1e-4, weight decay=0.005.

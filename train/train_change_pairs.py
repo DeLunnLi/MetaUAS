@@ -35,7 +35,7 @@ from dataset.coco_inpainted_dataset import (
 )
 from module import MetaUAS
 from utils.metric import evaluate_mvtec
-from train_ddp_common import (
+from train.train_ddp_common import (
     all_reduce_mean_epoch_loss,
     ddp_setup,
     ddp_teardown,
