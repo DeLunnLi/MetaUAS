@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import json
 import os
+import random
+from pathlib import Path
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -37,13 +40,37 @@ def evaluate_mvtec(
     dataset_path: Optional[str] = None,
     normal_image_path: Optional[str] = None,
     batch_size: int = 32,
+    seed: Optional[int] = None,
+    oneprompt_json: Optional[str] = None,
+    prompt_image_root: Optional[str] = None,
 ) -> Tuple[List[float], float]:
-    """Per-class AUROC on MVTec AD. Returns (auc_per_class, mean_auc)."""
+    """Per-class AUROC on MVTec AD. Returns (auc_per_class, mean_auc).
+
+    If oneprompt_json is provided, use fixed prompt images per class instead of random sampling.
+    prompt_image_root is prepended to paths in oneprompt_json.
+    """
+    if seed is not None:
+        random.seed(int(seed))
+        np.random.seed(int(seed))
+        torch.manual_seed(int(seed))
+
     path = dataset_path or os.environ.get("MVTEC_AD_PATH", DEFAULT_MVTEC_PATH)
+    prompt_root = Path(prompt_image_root) if prompt_image_root else Path(path)
+
+    oneprompt_map: dict[str, str] = {}
+    if oneprompt_json:
+        with open(oneprompt_json, "r", encoding="utf-8") as f:
+            oneprompt_map = json.load(f)
+
     auc_list: List[float] = []
 
     for class_name in CLASS_NAMES:
-        ds = MvtecDataset(path, class_name, normal_image_override=normal_image_path)
+        if class_name in oneprompt_map:
+            prompt_path = str(prompt_root / oneprompt_map[class_name])
+            ds = MvtecDataset(path, class_name, normal_image_override=prompt_path)
+        else:
+            ds = MvtecDataset(path, class_name, normal_image_override=normal_image_path)
+
         image_normal = ds.get_random_normal_image()
         loader = DataLoader(dataset=ds, batch_size=batch_size, shuffle=False)
         image_normal = image_normal.unsqueeze(0).to(device)

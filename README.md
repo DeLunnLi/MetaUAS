@@ -48,16 +48,114 @@ bash scripts/train_on_4gpu.sh
 
 ### Results
 
-| Dataset | Method | I-AUROC | P-AUROC | P-PRO |
-| :--- | :--- | :---: | :---: | :---: |
-| MVTec AD | MetaUAS | -- | -- | -- |
-| VisA | MetaUAS | -- | -- | -- |
+<div align="center">
+
+<table style="border-collapse: collapse; border-top: 1px solid #fff; border-bottom: 1px solid #fff;">
+<thead>
+<tr>
+<th rowspan="2">Methods</th>
+<th rowspan="2">Categories</th>
+<th colspan="3" style="text-align: center;">Anomaly Classification</th>
+<th colspan="4" style="text-align: center;">Anomaly Segmentation</th>
+</tr>
+<tr>
+<th>I-ROC</th>
+<th>I-PR</th>
+<th>I-F1<sub>max</sub></th>
+<th>P-ROC</th>
+<th>P-PR</th>
+<th>P-F1<sub>max</sub></th>
+<th>P-PRO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td rowspan="15">MetaUAS</td>
+<td>bottle</td>
+<td>98.9±0.9</td><td>99.7±0.2</td><td>98.3±0.9</td><td>98.3±0.7</td><td>84.4±2.0</td><td>75.9±1.2</td><td>93.6±1.4</td>
+</tr>
+<tr><td>cable</td><td>91.1±1.9</td><td>95.2±0.9</td><td>86.9±1.4</td><td>94.3±0.3</td><td>66.7±1.0</td><td>63.4±1.2</td><td>86.7±1.3</td></tr>
+<tr><td>capsule</td><td>69.9±3.7</td><td>90.6±3.5</td><td>92.1±1.4</td><td>93.8±0.6</td><td>28.4±8.9</td><td>34.5±5.5</td><td>62.4±2.7</td></tr>
+<tr><td>carpet</td><td>99.6±0.2</td><td>99.9±0.0</td><td>99.0±0.4</td><td>98.1±0.2</td><td>68.8±1.0</td><td>64.3±0.5</td><td>96.0±0.6</td></tr>
+<tr><td>grid</td><td>91.7±1.2</td><td>97.3±0.4</td><td>90.2±1.3</td><td>93.0±1.7</td><td>26.8±3.6</td><td>33.4±3.2</td><td>74.7±5.8</td></tr>
+<tr><td>hazelnut</td><td>78.8±11.9</td><td>84.8±11.2</td><td>84.5±2.6</td><td>96.0±1.3</td><td>34.0±13.1</td><td>39.7±9.7</td><td>80.6±5.8</td></tr>
+<tr><td>leather</td><td>100.0±0.0</td><td>100.0±0.0</td><td>100.0±0.0</td><td>99.4±0.1</td><td>61.3±1.9</td><td>56.4±1.4</td><td>99.0±0.1</td></tr>
+<tr><td>metal nut</td><td>95.5±2.0</td><td>98.9±0.5</td><td>95.4±1.4</td><td>96.4±0.7</td><td>80.4±3.7</td><td>73.7±2.8</td><td>90.5±2.2</td></tr>
+<tr><td>pill</td><td>90.2±2.8</td><td>98.1±0.6</td><td>93.2±0.9</td><td>95.6±0.9</td><td>64.3±5.2</td><td>59.8±3.5</td><td>92.5±0.7</td></tr>
+<tr><td>screw</td><td>53.6±5.2</td><td>76.7±3.5</td><td>85.5±0.4</td><td>92.0±1.6</td><td>4.6±1.2</td><td>9.6±2.1</td><td>71.2±4.4</td></tr>
+<tr><td>tile</td><td>96.0±1.3</td><td>98.7±0.4</td><td>94.6±1.6</td><td>94.0±1.4</td><td>75.8±1.9</td><td>69.6±1.3</td><td>87.0±2.7</td></tr>
+<tr><td>toothbrush</td><td>92.8±1.6</td><td>97.4±0.6</td><td>92.0±1.7</td><td>98.4±0.3</td><td>58.8±2.4</td><td>59.6±2.9</td><td>83.8±1.2</td></tr>
+<tr><td>transistor</td><td>83.9±5.4</td><td>82.4±4.6</td><td>74.6±5.9</td><td>85.7±3.4</td><td>40.6±5.3</td><td>40.7±5.4</td><td>75.2±5.2</td></tr>
+<tr><td>wood</td><td>99.8±0.2</td><td>99.9±0.1</td><td>99.2±0.0</td><td>94.1±0.7</td><td>68.7±1.6</td><td>64.7±1.2</td><td>93.9±0.6</td></tr>
+<tr><td>zipper</td><td>95.0±2.8</td><td>98.5±0.9</td><td>95.3±2.0</td><td>97.1±1.1</td><td>58.9±4.5</td><td>55.7±3.1</td><td>69.7±5.2</td></tr>
+<tr>
+<td style="border-bottom: 1px solid #fff;"></td>
+<td style="text-align: left; border-bottom: 1px solid #fff;">mean</td>
+<td style="border-bottom: 1px solid #fff;">89.1±1.1</td><td style="border-bottom: 1px solid #fff;">94.5±1.0</td><td style="border-bottom: 1px solid #fff;">92.1±0.6</td><td style="border-bottom: 1px solid #fff;">95.1±0.2</td><td style="border-bottom: 1px solid #fff;">54.8±0.9</td><td style="border-bottom: 1px solid #fff;">53.4±0.6</td><td style="border-bottom: 1px solid #fff;">83.8±0.6</td>
+</tr>
+</tbody>
+</table>
+
+
+
+</div>
+
+<br/>
+
+<div align="center">
+
+<table style="border-collapse: collapse; border-top: 1px solid #fff; border-bottom: 1px solid #fff;">
+<thead>
+<tr>
+<th rowspan="2">Methods</th>
+<th rowspan="2">Categories</th>
+<th colspan="3" style="text-align: center;">Anomaly Classification</th>
+<th colspan="4" style="text-align: center;">Anomaly Segmentation</th>
+</tr>
+<tr>
+<th>I-ROC</th>
+<th>I-PR</th>
+<th>I-F1<sub>max</sub></th>
+<th>P-ROC</th>
+<th>P-PR</th>
+<th>P-F1<sub>max</sub></th>
+<th>P-PRO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td rowspan="15">MetaUAS*</td>
+<td>bottle</td>
+<td>99.5</td><td>99.9</td><td>98.4</td><td>98.4</td><td>83.9</td><td>75.2</td><td>92.9</td>
+</tr>
+<tr><td>cable</td><td>96.3</td><td>98.0</td><td>93.4</td><td>96.4</td><td>70.5</td><td>66.1</td><td>91.2</td></tr>
+<tr><td>capsule</td><td>89.3</td><td>97.5</td><td>93.7</td><td>95.4</td><td>45.7</td><td>46.4</td><td>68.5</td></tr>
+<tr><td>carpet</td><td>99.7</td><td>99.9</td><td>98.9</td><td>97.9</td><td>68.2</td><td>64.0</td><td>95.4</td></tr>
+<tr><td>grid</td><td>95.7</td><td>98.7</td><td>93.7</td><td>94.0</td><td>29.4</td><td>36.8</td><td>79.7</td></tr>
+<tr><td>hazelnut</td><td>99.6</td><td>99.8</td><td>97.9</td><td>98.8</td><td>68.2</td><td>66.9</td><td>92.8</td></tr>
+<tr><td>leather</td><td>100.0</td><td>100.0</td><td>100.0</td><td>99.4</td><td>61.1</td><td>57.0</td><td>98.8</td></tr>
+<tr><td>metal nut</td><td>97.2</td><td>99.4</td><td>96.3</td><td>97.2</td><td>83.1</td><td>76.6</td><td>93.6</td></tr>
+<tr><td>pill</td><td>82.5</td><td>96.7</td><td>91.6</td><td>94.0</td><td>58.6</td><td>57.4</td><td>91.0</td></tr>
+<tr><td>screw</td><td>82.4</td><td>92.7</td><td>87.0</td><td>97.4</td><td>23.6</td><td>27.9</td><td>65.4</td></tr>
+<tr><td>tile</td><td>96.6</td><td>98.9</td><td>94.4</td><td>94.7</td><td>76.7</td><td>71.1</td><td>88.7</td></tr>
+<tr><td>toothbrush</td><td>96.4</td><td>98.6</td><td>93.8</td><td>99.0</td><td>64.3</td><td>63.2</td><td>81.2</td></tr>
+<tr><td>transistor</td><td>89.0</td><td>86.3</td><td>79.1</td><td>87.9</td><td>45.2</td><td>45.0</td><td>79.3</td></tr>
+<tr><td>wood</td><td>99.7</td><td>99.9</td><td>98.4</td><td>93.2</td><td>67.0</td><td>63.0</td><td>93.7</td></tr>
+<tr><td>zipper</td><td>93.6</td><td>98.1</td><td>95.0</td><td>96.8</td><td>58.4</td><td>56.2</td><td>68.2</td></tr>
+<tr>
+<td style="border-bottom: 1px solid #fff;"></td>
+<td style="text-align: left; border-bottom: 1px solid #fff;">mean</td>
+<td style="border-bottom: 1px solid #fff;">94.5</td><td style="border-bottom: 1px solid #fff;">97.6</td><td style="border-bottom: 1px solid #fff;">94.1</td><td style="border-bottom: 1px solid #fff;">96.0</td><td style="border-bottom: 1px solid #fff;">60.2</td><td style="border-bottom: 1px solid #fff;">58.2</td><td style="border-bottom: 1px solid #fff;">85.4</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
 
 ### Pretrained Models
 
-| Model | Link |
-| :--- | :--- |
-| MetaUAS | *TODO* |
+MetaUAS: [metauas-256.pth](https://huggingface.co/ldl010302/MetaUAS/blob/main/metauas-256.pth)
 
 ## 🙏 Acknowledgements
 
