@@ -152,6 +152,104 @@ bash scripts/train_on_4gpu.sh
 
 </div>
 
+<br/>
+
+<div align="center">
+
+<table style="border-collapse: collapse; border-top: 1px solid #fff; border-bottom: 1px solid #fff;">
+<thead>
+<tr>
+<th rowspan="2">Methods</th>
+<th rowspan="2">Categories</th>
+<th colspan="3" style="text-align: center;">Anomaly Classification</th>
+<th colspan="4" style="text-align: center;">Anomaly Segmentation</th>
+</tr>
+<tr>
+<th>I-ROC</th>
+<th>I-PR</th>
+<th>I-F1<sub>max</sub></th>
+<th>P-ROC</th>
+<th>P-PR</th>
+<th>P-F1<sub>max</sub></th>
+<th>P-PRO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td rowspan="12">MetaUAS*</td>
+<td>candle</td>
+<td>91.2</td><td>91.2</td><td>84.7</td><td>98.6</td><td>35.2</td><td>39.1</td><td>84.9</td>
+</tr>
+<tr><td>capsules</td><td>62.9</td><td>77.3</td><td>76.9</td><td>94.5</td><td>30.7</td><td>35.6</td><td>58.1</td></tr>
+<tr><td>cashew</td><td>85.5</td><td>93.4</td><td>84.3</td><td>98.6</td><td>77.9</td><td>71.4</td><td>76.8</td></tr>
+<tr><td>chewinggum</td><td>97.3</td><td>98.8</td><td>93.7</td><td>99.5</td><td>82.2</td><td>76.4</td><td>86.6</td></tr>
+<tr><td>fryum</td><td>79.5</td><td>89.9</td><td>81.7</td><td>88.9</td><td>22.3</td><td>31.7</td><td>37.7</td></tr>
+<tr><td>macaroni1</td><td>75.7</td><td>77.5</td><td>72.0</td><td>93.6</td><td>11.6</td><td>20.0</td><td>49.5</td></tr>
+<tr><td>macaroni2</td><td>59.2</td><td>56.3</td><td>68.1</td><td>91.7</td><td>1.1</td><td>5.6</td><td>67.8</td></tr>
+<tr><td>pcb1</td><td>82.5</td><td>80.5</td><td>77.1</td><td>99.2</td><td>76.3</td><td>71.3</td><td>69.3</td></tr>
+<tr><td>pcb2</td><td>70.0</td><td>69.6</td><td>67.7</td><td>97.2</td><td>14.8</td><td>26.3</td><td>79.0</td></tr>
+<tr><td>pcb3</td><td>76.2</td><td>75.8</td><td>73.6</td><td>97.2</td><td>31.1</td><td>35.5</td><td>57.0</td></tr>
+<tr><td>pcb4</td><td>95.3</td><td>95.6</td><td>88.5</td><td>96.8</td><td>35.6</td><td>43.8</td><td>72.2</td></tr>
+<tr><td>pipe_fryum</td><td>95.7</td><td>97.7</td><td>94.2</td><td>98.4</td><td>64.1</td><td>60.2</td><td>88.6</td></tr>
+<tr>
+<td style="border-bottom: 1px solid #fff;"></td>
+<td style="text-align: left; border-bottom: 1px solid #fff;">mean</td>
+<td style="border-bottom: 1px solid #fff;">80.9</td><td style="border-bottom: 1px solid #fff;">83.6</td><td style="border-bottom: 1px solid #fff;">80.2</td><td style="border-bottom: 1px solid #fff;">96.2</td><td style="border-bottom: 1px solid #fff;">40.2</td><td style="border-bottom: 1px solid #fff;">43.1</td><td style="border-bottom: 1px solid #fff;">69.0</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+<br/>
+
+<div align="center">
+
+<table style="border-collapse: collapse; border-top: 1px solid #fff; border-bottom: 1px solid #fff;">
+<thead>
+<tr>
+<th rowspan="2">Methods</th>
+<th rowspan="2">Categories</th>
+<th colspan="3" style="text-align: center;">Anomaly Classification</th>
+<th colspan="4" style="text-align: center;">Anomaly Segmentation</th>
+</tr>
+<tr>
+<th>I-ROC</th>
+<th>I-PR</th>
+<th>I-F1<sub>max</sub></th>
+<th>P-ROC</th>
+<th>P-PR</th>
+<th>P-F1<sub>max</sub></th>
+<th>P-PRO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td rowspan="12">MetaUAS</td>
+<td>candle</td>
+<td>90.1±1.2</td><td>90.6±1.0</td><td>84.0±1.9</td><td>98.4±0.4</td><td>33.1±2.5</td><td>38.8±1.3</td><td>85.5±1.8</td>
+</tr>
+<tr><td>capsules</td><td>62.7±5.5</td><td>73.4±4.0</td><td>78.1±0.6</td><td>92.2±2.2</td><td>16.0±2.8</td><td>24.7±1.9</td><td>52.2±2.3</td></tr>
+<tr><td>cashew</td><td>86.1±2.8</td><td>93.7±1.3</td><td>85.6±2.1</td><td>97.2±1.3</td><td>71.7±3.3</td><td>67.9±2.6</td><td>79.2±2.0</td></tr>
+<tr><td>chewinggum</td><td>96.9±1.0</td><td>98.7±0.4</td><td>94.5±0.6</td><td>99.5±0.1</td><td>82.5±1.2</td><td>76.6±0.8</td><td>85.3±0.9</td></tr>
+<tr><td>fryum</td><td>78.9±2.7</td><td>89.2±2.9</td><td>82.0±0.9</td><td>86.6±1.7</td><td>19.9±3.5</td><td>29.0±2.9</td><td>48.2±5.8</td></tr>
+<tr><td>macaroni1</td><td>77.2±1.4</td><td>80.7±0.8</td><td>71.9±1.7</td><td>92.6±2.4</td><td>12.7±0.7</td><td>21.6±0.6</td><td>56.9±4.2</td></tr>
+<tr><td>macaroni2</td><td>58.9±7.3</td><td>56.9±6.8</td><td>68.8±1.7</td><td>90.1±1.7</td><td>0.9±0.5</td><td>3.9±1.9</td><td>65.0±7.2</td></tr>
+<tr><td>pcb1</td><td>64.9±21.6</td><td>70.3±13.2</td><td>75.2±9.1</td><td>98.1±0.5</td><td>63.1±4.1</td><td>60.5±4.0</td><td>68.8±13.2</td></tr>
+<tr><td>pcb2</td><td>69.1±3.1</td><td>67.8±2.0</td><td>69.6±2.3</td><td>96.2±0.8</td><td>14.8±2.5</td><td>25.8±3.8</td><td>75.7±3.3</td></tr>
+<tr><td>pcb3</td><td>62.4±6.7</td><td>63.7±8.0</td><td>69.0±1.4</td><td>96.8±0.3</td><td>26.1±3.6</td><td>31.2±3.3</td><td>61.9±5.2</td></tr>
+<tr><td>pcb4</td><td>95.5±1.4</td><td>95.3±1.2</td><td>90.2±2.1</td><td>97.3±1.0</td><td>34.9±3.8</td><td>43.0±3.9</td><td>78.8±2.4</td></tr>
+<tr><td>pipe_fryum</td><td>95.4±1.9</td><td>97.5±1.1</td><td>93.6±1.9</td><td>98.7±0.5</td><td>67.8±3.3</td><td>63.2±2.2</td><td>85.8±1.3</td></tr>
+<tr>
+<td style="border-bottom: 1px solid #fff;"></td>
+<td style="text-align: left; border-bottom: 1px solid #fff;">mean</td>
+<td style="border-bottom: 1px solid #fff;">78.2±2.0</td><td style="border-bottom: 1px solid #fff;">81.5±1.5</td><td style="border-bottom: 1px solid #fff;">80.2±1.0</td><td style="border-bottom: 1px solid #fff;">95.3±0.5</td><td style="border-bottom: 1px solid #fff;">37.0±0.9</td><td style="border-bottom: 1px solid #fff;">40.5±0.6</td><td style="border-bottom: 1px solid #fff;">70.3±1.5</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
 
 ### Pretrained Models
 

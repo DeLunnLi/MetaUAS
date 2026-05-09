@@ -34,8 +34,8 @@ class MvtecDataset(Dataset):
     def get_len(self):
         return len(self.test_img_paths)
 
-    def __getitem__(self,idx):
-        test_img_path,test_label = self.test_img_paths[idx], self.test_label_paths[idx]
+    def __getitem__(self, idx):
+        test_img_path, test_label = self.test_img_paths[idx], self.test_label_paths[idx]
         class_name = self.CLASS_NAME
         image = Image.open(test_img_path)
         if class_name in ['zipper', 'screw', 'grid']:
@@ -44,7 +44,8 @@ class MvtecDataset(Dataset):
             image = Image.fromarray(image.astype('uint8')).convert('RGB')
         image = self.transform_image(image)
 
-        return image, test_label
+        mask_path = self.test_mask_paths[idx]
+        return image, test_label, mask_path
 
     def get_random_normal_image(self):
         if self.normal_image_override:

@@ -78,7 +78,7 @@ def evaluate_mvtec(
         all_predictions = []
 
         with torch.no_grad():
-            for images, labels in loader:
+            for images, labels, _mask_paths in loader:
                 test_image = images.to(device)
                 test_label = labels.to(device)
                 image_normal_expanded = image_normal.repeat(test_image.size(0), 1, 1, 1)
